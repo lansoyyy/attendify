@@ -1,3 +1,4 @@
+import 'package:attendify/utils/colors.dart';
 import 'package:attendify/widgets/text_widget.dart';
 import 'package:flutter/material.dart';
 
@@ -13,14 +14,14 @@ class ButtonWidget extends StatelessWidget {
 
   const ButtonWidget(
       {super.key,
-      this.radius = 100,
+      this.radius = 10,
       required this.label,
       this.textColor = Colors.white,
       required this.onPressed,
       this.width = 275,
       this.fontSize = 18,
       this.height = 60,
-      this.color = Colors.red});
+      this.color = primary});
   @override
   Widget build(BuildContext context) {
     return MaterialButton(
