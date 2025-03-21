@@ -1,4 +1,5 @@
 import 'package:attendify/screens/add_student_screen.dart';
+import 'package:attendify/screens/attendance_screen.dart';
 import 'package:attendify/widgets/button_widget.dart';
 import 'package:attendify/widgets/text_widget.dart';
 import 'package:flutter/material.dart';
@@ -41,7 +42,10 @@ class HomeScreen extends StatelessWidget {
             ),
             ButtonWidget(
               label: 'Take Attendance',
-              onPressed: () {},
+              onPressed: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => AttendanceScreen()));
+              },
             ),
             SizedBox(
               height: 20,
