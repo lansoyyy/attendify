@@ -1,8 +1,11 @@
 import 'package:attendify/widgets/text_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 class GenerateQrScreen extends StatelessWidget {
-  const GenerateQrScreen({super.key});
+  dynamic data;
+
+  GenerateQrScreen({super.key, required this.data});
 
   @override
   Widget build(BuildContext context) {
@@ -45,12 +48,12 @@ class GenerateQrScreen extends StatelessWidget {
                 height: 50,
               ),
               TextWidget(
-                text: 'Juan Dela Cruz',
+                text: data['name'],
                 fontSize: 24,
                 fontFamily: 'Bold',
               ),
               TextWidget(
-                text: 'Male',
+                text: data['gender'],
                 fontSize: 16,
                 fontFamily: 'Medium',
               ),
@@ -66,6 +69,11 @@ class GenerateQrScreen extends StatelessWidget {
                       border: Border.all(
                         color: Colors.black,
                       )),
+                  child: QrImageView(
+                    data: data['id'],
+                    version: QrVersions.auto,
+                    size: 300.0,
+                  ),
                 ),
               ),
             ],
