@@ -1,6 +1,7 @@
 import 'package:attendify/screens/calendar_screen.dart';
 import 'package:attendify/utils/colors.dart';
 import 'package:attendify/widgets/text_widget.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class AttendanceScreen extends StatefulWidget {
@@ -27,11 +28,21 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     'December'
   ];
 
-  void addMonth() {
+  void addMonth(int length) async {
     if (months.length < allMonths.length) {
-      setState(() {
-        months.add(allMonths[months.length]);
-      });
+      // setState(() {
+      //   months.add(allMonths[months.length]);
+      // });
+
+      final docUser = FirebaseFirestore.instance.collection('Months').doc();
+
+      final json = {
+        'name': allMonths[length],
+        'dateTime': DateTime.now(),
+        'month': length
+      };
+
+      await docUser.set(json);
     }
   }
 
@@ -75,12 +86,36 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             SizedBox(
               height: 20,
             ),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: months.map((month) => _buildMonthCard(month)).toList()
-                ..add(_buildAddButton()),
-            ),
+            StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('Months')
+                    .orderBy('month', descending: false)
+                    .snapshots(),
+                builder: (BuildContext context,
+                    AsyncSnapshot<QuerySnapshot> snapshot) {
+                  if (snapshot.hasError) {
+                    print(snapshot.error);
+                    return const Center(child: Text('Error'));
+                  }
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Padding(
+                      padding: EdgeInsets.only(top: 50),
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          color: Colors.black,
+                        ),
+                      ),
+                    );
+                  }
+
+                  final data = snapshot.requireData;
+
+                  return Wrap(spacing: 10, runSpacing: 10, children: [
+                    for (int i = 0; i < data.docs.length; i++)
+                      _buildMonthCard(data.docs[i]['name']),
+                    _buildAddButton(data.docs.length)
+                  ]);
+                }),
           ],
         ),
       )),
@@ -118,9 +153,11 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     );
   }
 
-  Widget _buildAddButton() {
+  Widget _buildAddButton(int length) {
     return GestureDetector(
-      onTap: addMonth,
+      onTap: () {
+        addMonth(length);
+      },
       child: Container(
         width: 100,
         height: 100,
