@@ -1,4 +1,5 @@
 import 'package:attendify/widgets/text_widget.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class StudentListScreen extends StatelessWidget {
@@ -50,22 +51,47 @@ class StudentListScreen extends StatelessWidget {
               fontFamily: 'Bold',
             ),
             Divider(),
-            Expanded(
-              child: ListView.builder(
-                itemBuilder: (context, index) {
-                  return SizedBox(
-                    height: 40,
-                    child: ListTile(
-                      leading: TextWidget(
-                        text: 'Juan Dela Cruz',
-                        fontSize: 22,
-                        fontFamily: 'Medium',
+            StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('Students')
+                    .orderBy('dateTime', descending: true)
+                    .snapshots(),
+                builder: (BuildContext context,
+                    AsyncSnapshot<QuerySnapshot> snapshot) {
+                  if (snapshot.hasError) {
+                    print(snapshot.error);
+                    return const Center(child: Text('Error'));
+                  }
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Padding(
+                      padding: EdgeInsets.only(top: 50),
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          color: Colors.black,
+                        ),
                       ),
+                    );
+                  }
+
+                  final data = snapshot.requireData;
+                  return Expanded(
+                    child: ListView.builder(
+                      itemCount: data.docs.length,
+                      itemBuilder: (context, index) {
+                        return SizedBox(
+                          height: 40,
+                          child: ListTile(
+                            leading: TextWidget(
+                              text: data.docs[index]['name'],
+                              fontSize: 22,
+                              fontFamily: 'Medium',
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   );
-                },
-              ),
-            )
+                })
           ],
         ),
       )),
