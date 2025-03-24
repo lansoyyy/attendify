@@ -14,7 +14,7 @@ class AddStudentScreen extends StatefulWidget {
 
 class _AddStudentScreenState extends State<AddStudentScreen> {
   final name = TextEditingController();
-  bool isMale = false;
+  bool isMale = true;
   bool isFemale = false;
 
   void _updateSelection(String gender) {
