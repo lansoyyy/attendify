@@ -112,7 +112,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
                   return Wrap(spacing: 10, runSpacing: 10, children: [
                     for (int i = 0; i < data.docs.length; i++)
-                      _buildMonthCard(data.docs[i]['name']),
+                      _buildMonthCard(data.docs[i]['name'], i + 1),
                     _buildAddButton(data.docs.length)
                   ]);
                 }),
@@ -122,11 +122,13 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     );
   }
 
-  Widget _buildMonthCard(String month) {
+  Widget _buildMonthCard(String month, int intMOnth) {
     return GestureDetector(
       onTap: () {
-        Navigator.of(context)
-            .push(MaterialPageRoute(builder: (context) => CalendarScreen()));
+        Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => CalendarScreen(
+                  month: intMOnth,
+                )));
       },
       child: Container(
         width: 100,

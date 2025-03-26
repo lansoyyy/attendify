@@ -2,11 +2,21 @@ import 'package:attendify/screens/scan_qr_screen.dart';
 import 'package:attendify/screens/student_record_screen.dart';
 import 'package:attendify/widgets/button_widget.dart';
 import 'package:attendify/widgets/text_widget.dart';
+import 'package:calendar_view/calendar_view.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
-class CalendarScreen extends StatelessWidget {
-  const CalendarScreen({super.key});
+class CalendarScreen extends StatefulWidget {
+  int month;
 
+  CalendarScreen({super.key, required this.month});
+
+  @override
+  State<CalendarScreen> createState() => _CalendarScreenState();
+}
+
+class _CalendarScreenState extends State<CalendarScreen> {
+  int day = 1;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -49,7 +59,8 @@ class CalendarScreen extends StatelessWidget {
                 height: 20,
               ),
               TextWidget(
-                text: 'January',
+                text: DateFormat('dd/MM/yyy')
+                    .format(DateTime(2025, widget.month, day)),
                 fontSize: 24,
                 fontFamily: 'Bold',
               ),
@@ -65,6 +76,14 @@ class CalendarScreen extends StatelessWidget {
                       border: Border.all(
                         color: Colors.black,
                       )),
+                  child: MonthView(
+                    onCellTap: (events, date) {
+                      setState(() {
+                        day = date.day;
+                      });
+                    },
+                    initialMonth: DateTime(2025, widget.month),
+                  ),
                 ),
               ),
               SizedBox(
