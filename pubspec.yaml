@@ -40,6 +40,7 @@ dependencies:
   firebase_database:
   cloud_firestore:
   qr_flutter:
+  calendar_view:
 
 dev_dependencies:
   flutter_test:
