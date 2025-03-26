@@ -3,6 +3,7 @@ import 'package:attendify/screens/student_record_screen.dart';
 import 'package:attendify/widgets/button_widget.dart';
 import 'package:attendify/widgets/text_widget.dart';
 import 'package:calendar_view/calendar_view.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -94,11 +95,38 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 fontSize: 14,
                 fontFamily: 'Medium',
               ),
-              TextWidget(
-                text: 'Number of Present',
-                fontSize: 18,
-                fontFamily: 'Bold',
-              ),
+              StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection('Attendance')
+                      .where('year', isEqualTo: DateTime.now().year)
+                      .where('month', isEqualTo: widget.month)
+                      .where('day', isEqualTo: day)
+                      .where('remarks', isEqualTo: 'Not Tardy')
+                      .snapshots(),
+                  builder: (BuildContext context,
+                      AsyncSnapshot<QuerySnapshot> snapshot) {
+                    if (snapshot.hasError) {
+                      print(snapshot.error);
+                      return const Center(child: Text('Error'));
+                    }
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Padding(
+                        padding: EdgeInsets.only(top: 50),
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            color: Colors.black,
+                          ),
+                        ),
+                      );
+                    }
+
+                    final data = snapshot.requireData;
+                    return TextWidget(
+                      text: data.docs.length.toString(),
+                      fontSize: 18,
+                      fontFamily: 'Bold',
+                    );
+                  }),
               SizedBox(
                 height: 10,
               ),
@@ -107,11 +135,63 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 fontSize: 14,
                 fontFamily: 'Medium',
               ),
-              TextWidget(
-                text: 'Number of Absent',
-                fontSize: 18,
-                fontFamily: 'Bold',
-              ),
+              StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection('Students')
+                      .snapshots(),
+                  builder: (BuildContext context,
+                      AsyncSnapshot<QuerySnapshot> snapshot) {
+                    if (snapshot.hasError) {
+                      print(snapshot.error);
+                      return const Center(child: Text('Error'));
+                    }
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Padding(
+                        padding: EdgeInsets.only(top: 50),
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            color: Colors.black,
+                          ),
+                        ),
+                      );
+                    }
+
+                    final studentData = snapshot.requireData;
+                    return StreamBuilder<QuerySnapshot>(
+                        stream: FirebaseFirestore.instance
+                            .collection('Attendance')
+                            .where('year', isEqualTo: DateTime.now().year)
+                            .where('month', isEqualTo: widget.month)
+                            .where('day', isEqualTo: day)
+                            .snapshots(),
+                        builder: (BuildContext context,
+                            AsyncSnapshot<QuerySnapshot> snapshot) {
+                          if (snapshot.hasError) {
+                            print(snapshot.error);
+                            return const Center(child: Text('Error'));
+                          }
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Padding(
+                              padding: EdgeInsets.only(top: 50),
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  color: Colors.black,
+                                ),
+                              ),
+                            );
+                          }
+
+                          final attendanceData = snapshot.requireData;
+                          return TextWidget(
+                            text: (studentData.docs.length -
+                                    attendanceData.docs.length)
+                                .toString(),
+                            fontSize: 18,
+                            fontFamily: 'Bold',
+                          );
+                        });
+                  }),
               SizedBox(
                 height: 10,
               ),
@@ -120,11 +200,38 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 fontSize: 14,
                 fontFamily: 'Medium',
               ),
-              TextWidget(
-                text: 'Number of Tardy',
-                fontSize: 18,
-                fontFamily: 'Bold',
-              ),
+              StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection('Attendance')
+                      .where('year', isEqualTo: DateTime.now().year)
+                      .where('month', isEqualTo: widget.month)
+                      .where('day', isEqualTo: day)
+                      .where('remarks', isEqualTo: 'Tardy')
+                      .snapshots(),
+                  builder: (BuildContext context,
+                      AsyncSnapshot<QuerySnapshot> snapshot) {
+                    if (snapshot.hasError) {
+                      print(snapshot.error);
+                      return const Center(child: Text('Error'));
+                    }
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Padding(
+                        padding: EdgeInsets.only(top: 50),
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            color: Colors.black,
+                          ),
+                        ),
+                      );
+                    }
+
+                    final data = snapshot.requireData;
+                    return TextWidget(
+                      text: data.docs.length.toString(),
+                      fontSize: 18,
+                      fontFamily: 'Bold',
+                    );
+                  }),
               SizedBox(
                 height: 30,
               ),
@@ -133,7 +240,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   label: 'Scan',
                   onPressed: () {
                     Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => ScanQrScreen()));
+                        builder: (context) => ScanQrScreen(
+                              day: day,
+                            )));
                   },
                 ),
               ),
@@ -145,7 +254,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   label: 'See Record',
                   onPressed: () {
                     Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => StudentRecordScreen()));
+                        builder: (context) => StudentRecordScreen(
+                              day: day,
+                              month: widget.month,
+                            )));
                   },
                 ),
               ),

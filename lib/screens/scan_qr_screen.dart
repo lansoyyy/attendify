@@ -3,7 +3,9 @@ import 'package:attendify/widgets/text_widget.dart';
 import 'package:flutter/material.dart';
 
 class ScanQrScreen extends StatelessWidget {
-  const ScanQrScreen({super.key});
+  int day;
+
+  ScanQrScreen({super.key, required this.day});
 
   @override
   Widget build(BuildContext context) {

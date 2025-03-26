@@ -1,8 +1,13 @@
 import 'package:attendify/widgets/text_widget.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class StudentRecordScreen extends StatelessWidget {
-  const StudentRecordScreen({super.key});
+  int day;
+  int month;
+
+  StudentRecordScreen({super.key, required this.day, required this.month});
 
   @override
   Widget build(BuildContext context) {
@@ -44,6 +49,11 @@ class StudentRecordScreen extends StatelessWidget {
             SizedBox(
               height: 35,
             ),
+            TextWidget(
+              text: DateFormat('dd/MM/yyy').format(DateTime(2025, month, day)),
+              fontSize: 24,
+              fontFamily: 'Bold',
+            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -60,27 +70,54 @@ class StudentRecordScreen extends StatelessWidget {
               ],
             ),
             Divider(),
-            Expanded(
-              child: ListView.builder(
-                itemBuilder: (context, index) {
-                  return SizedBox(
-                    height: 40,
-                    child: ListTile(
-                      leading: TextWidget(
-                        text: 'Juan Dela Cruz',
-                        fontSize: 22,
-                        fontFamily: 'Medium',
+            StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('Attendance')
+                    .where('year', isEqualTo: DateTime.now().year)
+                    .where('month', isEqualTo: month)
+                    .where('day', isEqualTo: day)
+                    .snapshots(),
+                builder: (BuildContext context,
+                    AsyncSnapshot<QuerySnapshot> snapshot) {
+                  if (snapshot.hasError) {
+                    print(snapshot.error);
+                    return const Center(child: Text('Error'));
+                  }
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Padding(
+                      padding: EdgeInsets.only(top: 50),
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          color: Colors.black,
+                        ),
                       ),
-                      trailing: TextWidget(
-                        text: 'Tardy',
-                        fontSize: 22,
-                        fontFamily: 'Medium',
-                      ),
+                    );
+                  }
+
+                  final data = snapshot.requireData;
+                  return Expanded(
+                    child: ListView.builder(
+                      itemCount: data.docs.length,
+                      itemBuilder: (context, index) {
+                        return SizedBox(
+                          height: 40,
+                          child: ListTile(
+                            leading: TextWidget(
+                              text: data.docs[index]['name'],
+                              fontSize: 22,
+                              fontFamily: 'Medium',
+                            ),
+                            trailing: TextWidget(
+                              text: data.docs[index]['remarks'],
+                              fontSize: 22,
+                              fontFamily: 'Medium',
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   );
-                },
-              ),
-            )
+                })
           ],
         ),
       )),
