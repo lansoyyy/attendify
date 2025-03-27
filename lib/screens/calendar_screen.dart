@@ -241,6 +241,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   onPressed: () {
                     Navigator.of(context).push(MaterialPageRoute(
                         builder: (context) => ScanQrScreen(
+                              month: widget.month,
                               day: day,
                             )));
                   },

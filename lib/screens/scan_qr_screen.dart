@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 
 class ScanQrScreen extends StatelessWidget {
   int day;
+  int month;
 
-  ScanQrScreen({super.key, required this.day});
+  ScanQrScreen({super.key, required this.day, required this.month});
 
   @override
   Widget build(BuildContext context) {

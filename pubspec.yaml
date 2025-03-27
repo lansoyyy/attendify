@@ -41,6 +41,7 @@ dependencies:
   cloud_firestore:
   qr_flutter:
   calendar_view:
+  flutter_barcode_scanner_plus:
 
 dev_dependencies:
   flutter_test:
