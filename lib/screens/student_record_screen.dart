@@ -1,3 +1,4 @@
+import 'package:attendify/widgets/button_widget.dart';
 import 'package:attendify/widgets/text_widget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -36,9 +37,6 @@ class StudentRecordScreen extends StatelessWidget {
                   'assets/images/logo.png',
                   height: 35,
                 ),
-                SizedBox(
-                  width: 20,
-                ),
                 TextWidget(
                   text: 'Records',
                   fontSize: 16,
@@ -49,10 +47,27 @@ class StudentRecordScreen extends StatelessWidget {
             SizedBox(
               height: 35,
             ),
-            TextWidget(
-              text: DateFormat('dd/MM/yyy').format(DateTime(2025, month, day)),
-              fontSize: 24,
-              fontFamily: 'Bold',
+            Row(
+              children: [
+                TextWidget(
+                  text: DateFormat('dd/MM/yyy')
+                      .format(DateTime(2025, month, day)),
+                  fontSize: 24,
+                  fontFamily: 'Bold',
+                ),
+                Expanded(
+                  child: SizedBox(
+                    width: 20,
+                  ),
+                ),
+                ButtonWidget(
+                  fontSize: 12,
+                  width: 150,
+                  height: 40,
+                  label: 'Export CSV',
+                  onPressed: () {},
+                ),
+              ],
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

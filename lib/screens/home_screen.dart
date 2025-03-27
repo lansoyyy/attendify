@@ -50,10 +50,6 @@ class HomeScreen extends StatelessWidget {
             SizedBox(
               height: 20,
             ),
-            ButtonWidget(
-              label: 'Export CSV',
-              onPressed: () {},
-            ),
           ],
         ),
       ),
