@@ -42,6 +42,10 @@ dependencies:
   qr_flutter:
   calendar_view:
   flutter_barcode_scanner_plus:
+  permission_handler:
+  open_file:
+  printing: ^5.9.3
+  path_provider:
 
 dev_dependencies:
   flutter_test:
