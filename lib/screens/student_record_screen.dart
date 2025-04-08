@@ -1,4 +1,3 @@
-import 'package:attendify/widgets/button_widget.dart';
 import 'package:attendify/widgets/text_widget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
@@ -71,15 +70,33 @@ class _StudentRecordScreenState extends State<StudentRecordScreen> {
                     width: 20,
                   ),
                 ),
-                ButtonWidget(
-                  fontSize: 12,
-                  width: 125,
-                  height: 40,
-                  label: 'Export',
-                  onPressed: () {
-                    generatePdf(reports);
+                PopupMenuButton(
+                  icon: Icon(
+                    Icons.save,
+                  ),
+                  itemBuilder: (context) {
+                    return [
+                      PopupMenuItem(
+                        onTap: () {
+                          generatePdf(reports);
+                        },
+                        child: TextWidget(
+                          text: 'Daily Report',
+                          fontSize: 18,
+                        ),
+                      ),
+                      PopupMenuItem(
+                        onTap: () {
+                          generatePdf(reports);
+                        },
+                        child: TextWidget(
+                          text: 'Monthly Report',
+                          fontSize: 18,
+                        ),
+                      ),
+                    ];
                   },
-                ),
+                )
               ],
             ),
             Row(
@@ -187,7 +204,7 @@ class _StudentRecordScreenState extends State<StudentRecordScreen> {
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a3,
-        orientation: pw.PageOrientation.landscape,
+        orientation: pw.PageOrientation.portrait,
         build: (context) => [
           pw.Align(
             alignment: pw.Alignment.center,
