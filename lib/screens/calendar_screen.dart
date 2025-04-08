@@ -81,9 +81,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     onCellTap: (events, date) {
                       setState(() {
                         day = date.day;
+                        widget.month = date.month;
                       });
                     },
-                    initialMonth: DateTime(2025, widget.month),
+                    initialMonth: DateTime(DateTime.now().year, widget.month),
                   ),
                 ),
               ),
