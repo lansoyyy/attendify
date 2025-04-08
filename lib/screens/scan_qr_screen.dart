@@ -199,6 +199,7 @@ class _ScanQrScreenState extends State<ScanQrScreen> {
             }
           },
         );
+        Navigator.pop(context);
       } else {
         Navigator.pop(context);
       }
