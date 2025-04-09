@@ -1,3 +1,4 @@
+import 'package:attendify/utils/const.dart';
 import 'package:attendify/widgets/text_widget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
@@ -20,6 +21,11 @@ class StudentRecordScreen extends StatefulWidget {
 
 class _StudentRecordScreenState extends State<StudentRecordScreen> {
   List reports = [];
+
+  List reportMonth = [];
+
+  List<int> daysInMonths = getDaysInMonths(2025);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -87,12 +93,96 @@ class _StudentRecordScreenState extends State<StudentRecordScreen> {
                       ),
                       PopupMenuItem(
                         onTap: () {
-                          generatePdf(reports);
+                          generatePdfMonth(reportMonth.toList());
                         },
-                        child: TextWidget(
-                          text: 'Monthly Report',
-                          fontSize: 18,
-                        ),
+                        child: StreamBuilder<QuerySnapshot>(
+                            stream: FirebaseFirestore.instance
+                                .collection('Students')
+                                .snapshots(),
+                            builder: (BuildContext context,
+                                AsyncSnapshot<QuerySnapshot> snapshot) {
+                              if (snapshot.hasError) {
+                                print(snapshot.error);
+                                return const Center(child: Text('Error'));
+                              }
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const Padding(
+                                  padding: EdgeInsets.only(top: 50),
+                                  child: Center(
+                                    child: CircularProgressIndicator(
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                );
+                              }
+
+                              final studentData = snapshot.requireData;
+                              return StreamBuilder<QuerySnapshot>(
+                                  stream: FirebaseFirestore.instance
+                                      .collection('Attendance')
+                                      .where('year',
+                                          isEqualTo: DateTime.now().year)
+                                      .where('month', isEqualTo: widget.month)
+                                      .snapshots(),
+                                  builder: (BuildContext context,
+                                      AsyncSnapshot<QuerySnapshot> snapshot) {
+                                    if (snapshot.hasError) {
+                                      print(snapshot.error);
+                                      return const Center(child: Text('Error'));
+                                    }
+                                    if (snapshot.connectionState ==
+                                        ConnectionState.waiting) {
+                                      return const Padding(
+                                        padding: EdgeInsets.only(top: 50),
+                                        child: Center(
+                                          child: CircularProgressIndicator(
+                                            color: Colors.black,
+                                          ),
+                                        ),
+                                      );
+                                    }
+
+                                    final attendanceData = snapshot.requireData;
+
+                                    WidgetsBinding.instance
+                                        .addPostFrameCallback(
+                                      (timeStamp) {
+                                        reportMonth.clear();
+                                        for (int i = 0;
+                                            i < studentData.docs.length;
+                                            i++) {
+                                          reportMonth.add({
+                                            'name': studentData.docs[i]['name'],
+                                            'present': attendanceData.docs
+                                                .where(
+                                                  (element) =>
+                                                      element['studentId'] ==
+                                                      studentData.docs[i].id,
+                                                )
+                                                .length
+                                                .toString(),
+                                            'absent': (weekdays[widget.month] -
+                                                    (attendanceData.docs
+                                                        .where(
+                                                          (element) =>
+                                                              element[
+                                                                  'studentId'] ==
+                                                              studentData
+                                                                  .docs[i].id,
+                                                        )
+                                                        .length))
+                                                .toString(),
+                                          });
+                                        }
+                                      },
+                                    );
+                                    return TextWidget(
+                                      text: 'Monthly Report',
+                                      fontSize: 18,
+                                    );
+                                  });
+                            }),
                       ),
                     ];
                   },
@@ -184,9 +274,8 @@ class _StudentRecordScreenState extends State<StudentRecordScreen> {
       pageMode: PdfPageMode.fullscreen,
     );
     List<String> tableHeaders = [
-      'Number',
       'Name',
-      'Remarks',
+      'Tardy Status',
     ];
 
     String cdate2 = DateFormat("MMMM dd, yyyy")
@@ -195,7 +284,6 @@ class _StudentRecordScreenState extends State<StudentRecordScreen> {
     List<List<String>> tableData = [];
     for (var i = 0; i < tableDataList.length; i++) {
       tableData.add([
-        '${i + 1}',
         tableDataList[i]['name'],
         tableDataList[i]['remarks'],
       ]);
@@ -268,5 +356,85 @@ class _StudentRecordScreenState extends State<StudentRecordScreen> {
 //         ..click();
 //       html.Url.revokeObjectUrl(url);
 //     }
+  }
+
+  void generatePdfMonth(List tableDataList) async {
+    final pdf = pw.Document(
+      pageMode: PdfPageMode.fullscreen,
+    );
+    List<String> tableHeaders = [
+      'Name',
+      'Number of Present Days',
+      'Number of Absent Days',
+    ];
+
+    String cdate2 = DateFormat("MMMM dd, yyyy")
+        .format(DateTime(DateTime.now().year, widget.month, widget.day));
+
+    List<List<String>> tableData = [];
+    for (var i = 0; i < tableDataList.length; i++) {
+      tableData.add([
+        tableDataList[i]['name'],
+        tableDataList[i]['present'],
+        tableDataList[i]['absent'],
+      ]);
+    }
+
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a3,
+        orientation: pw.PageOrientation.portrait,
+        build: (context) => [
+          pw.Align(
+            alignment: pw.Alignment.center,
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.center,
+              children: [
+                pw.Text('Attendify',
+                    style: const pw.TextStyle(
+                      fontSize: 18,
+                    )),
+                pw.SizedBox(height: 10),
+                pw.Text(
+                  style: const pw.TextStyle(
+                    fontSize: 12,
+                  ),
+                  'Attendance for',
+                ),
+                pw.SizedBox(height: 5),
+                pw.Text(
+                  style: const pw.TextStyle(
+                    fontSize: 10,
+                  ),
+                  cdate2,
+                ),
+              ],
+            ),
+          ),
+          pw.SizedBox(height: 20),
+          pw.Table.fromTextArray(
+            headers: tableHeaders,
+            data: tableData,
+            headerDecoration: const pw.BoxDecoration(),
+            rowDecoration: const pw.BoxDecoration(),
+            headerHeight: 25,
+            cellHeight: 45,
+            cellAlignments: {
+              0: pw.Alignment.centerLeft,
+              1: pw.Alignment.center,
+            },
+          ),
+          pw.SizedBox(height: 20),
+        ],
+      ),
+    );
+
+    final Uint8List pdfBytes = await pdf.save();
+
+// Share the PDF using the Printing package
+    await Printing.sharePdf(
+      bytes: pdfBytes,
+      filename: 'attendance.pdf',
+    );
   }
 }

@@ -43,3 +43,32 @@ String groups = 'assets/images/groups.png';
 String gcash = 'assets/images/image 5.png';
 String paymaya = 'assets/images/image 6.png';
 String bpi = 'assets/images/clarity_bank-solid.png';
+
+List<int> getDaysInMonths(int year) {
+  return List.generate(12, (index) {
+    int month = index + 1;
+    DateTime firstDayThisMonth = DateTime(year, month, 1);
+    DateTime firstDayNextMonth =
+        (month == 12) ? DateTime(year + 1, 1, 1) : DateTime(year, month + 1, 1);
+    return firstDayNextMonth.difference(firstDayThisMonth).inDays;
+  });
+}
+
+List<int> getWeekdayCountsPerMonth(int year) {
+  return List.generate(12, (index) {
+    int month = index + 1;
+    int daysInMonth = DateTime(year, month + 1, 0).day;
+    int weekdayCount = 0;
+
+    for (int day = 1; day <= daysInMonth; day++) {
+      DateTime date = DateTime(year, month, day);
+      if (date.weekday >= DateTime.monday && date.weekday <= DateTime.friday) {
+        weekdayCount++;
+      }
+    }
+
+    return weekdayCount;
+  });
+}
+
+List<int> weekdays = getWeekdayCountsPerMonth(DateTime.now().year);
